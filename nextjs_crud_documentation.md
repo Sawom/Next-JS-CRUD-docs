@@ -276,7 +276,7 @@ Feel free to enhance it by adding:
 
 ---
 
-🔗 **GitHub Repository:** *[Add Your Repo Link Here]*  
-📧 **Author:** *[Your Name]*  
+  
+📧 **Author:** *Abdur Rashid Sawom*  
 
 Happy Coding! 🚀
