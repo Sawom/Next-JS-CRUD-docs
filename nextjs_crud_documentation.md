@@ -1,33 +1,33 @@
-# Next.js CRUD API Documentation
+# 🚀 Full Next.js CRUD App with MongoDB
 
-## 🚀 Project Overview
-This is a **Next.js full-stack CRUD application** using **MongoDB** as the database and Next.js API Routes for backend services. The app allows users to **Create, Read, Update, and Delete (CRUD)** tasks.
+This guide covers the **complete CRUD (Create, Read, Update, Delete) implementation** in a **Next.js full-stack application**, integrating **MongoDB for the database** and **React frontend with Axios** for fetching and managing data.
 
 ---
 
-## 📌 Setup and Installation
+## 📌 **Project Setup**
 
-### **1️⃣ Clone the Repository**
+### 1️⃣ **Clone the Repository**
 ```bash
 git clone https://github.com/yourusername/nextjs-crud-app.git
 cd nextjs-crud-app
 ```
 
-### **2️⃣ Install Dependencies**
+### 2️⃣ **Install Dependencies**
 ```bash
 npm install
 ```
 
-### **3️⃣ Setup Environment Variables**
+### 3️⃣ **Setup Environment Variables**
 Create a `.env.local` file in the root directory and add:
-```
+```env
 MONGODB_URI=mongodb+srv://yourusername:yourpassword@cluster.mongodb.net/nextjscrud
 ```
 
 ---
 
 ## 🏗️ **Database Connection**
-We use **Mongoose** to connect to MongoDB.  
+
+We use **Mongoose** to connect to MongoDB.
 📌 File: `utils/db.js`
 ```javascript
 import mongoose from "mongoose";
@@ -76,11 +76,14 @@ export default mongoose.models.Task || mongoose.model("Task", TaskSchema);
 
 ---
 
-## 🌐 **API Endpoints**
+## 🌐 **Backend API Routes (CRUD Operations)**
 
 ### **1️⃣ Get All Tasks (READ)**
-📌 **GET** `/api/tasks`
+📌 File: `pages/api/tasks/index.js`
 ```javascript
+import connectDB from "../../../utils/db";
+import Task from "../../../models/Task";
+
 export default async function handler(req, res) {
   await connectDB();
   if (req.method === "GET") {
@@ -89,22 +92,9 @@ export default async function handler(req, res) {
   }
 }
 ```
-📌 **Response Example:**
-```json
-[
-  {
-    "_id": "65b7f1b1b1b1b1b1b1b1b1b1",
-    "title": "Learn Next.js",
-    "description": "Practice CRUD operations",
-    "createdAt": "2025-03-15T14:00:00.000Z"
-  }
-]
-```
-
----
 
 ### **2️⃣ Create a Task (POST)**
-📌 **POST** `/api/tasks`
+📌 File: `pages/api/tasks/index.js`
 ```javascript
 export default async function handler(req, res) {
   await connectDB();
@@ -119,23 +109,14 @@ export default async function handler(req, res) {
   }
 }
 ```
-📌 **Request Example:**
-```json
-{
-  "title": "Build CRUD App",
-  "description": "Use Next.js API Routes and MongoDB"
-}
-```
 
----
-
-### **3️⃣ Update a Task (PUT)**
-📌 **PUT** `/api/tasks/:id`
+### **3️⃣ Update a Task (PUT/PATCH)**
+📌 File: `pages/api/tasks/[id].js`
 ```javascript
 export default async function handler(req, res) {
   await connectDB();
   const { id } = req.query;
-  if (req.method === "PUT") {
+  if (req.method === "PUT" || req.method === "PATCH") {
     try {
       const { title, description } = req.body;
       const updatedTask = await Task.findByIdAndUpdate(
@@ -150,42 +131,10 @@ export default async function handler(req, res) {
   }
 }
 ```
-📌 **Request Example:**
-```json
-{
-  "title": "Learn Full-Stack Development",
-  "description": "Include authentication and authorization"
-}
-```
 
 ---
 
-### **4️⃣ Delete a Task (DELETE)**
-📌 **DELETE** `/api/tasks/:id`
-```javascript
-export default async function handler(req, res) {
-  await connectDB();
-  const { id } = req.query;
-  if (req.method === "DELETE") {
-    try {
-      await Task.findByIdAndDelete(id);
-      return res.status(200).json({ message: "Task deleted" });
-    } catch (error) {
-      return res.status(500).json({ error: "Delete failed" });
-    }
-  }
-}
-```
-📌 **Response Example:**
-```json
-{
-  "message": "Task deleted"
-}
-```
-
----
-
-## 🎨 **Frontend (Fetching Tasks and UI)**
+## 🎨 **Frontend Implementation (CRUD with Axios & useState)**
 📌 File: `pages/index.js`
 ```javascript
 import { useState, useEffect } from "react";
@@ -194,6 +143,7 @@ import axios from "axios";
 export default function Home() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [editTask, setEditTask] = useState(null);
 
   useEffect(() => {
     fetchTasks();
@@ -207,6 +157,12 @@ export default function Home() {
   const addTask = async () => {
     await axios.post("/api/tasks", { title });
     setTitle("");
+    fetchTasks();
+  };
+
+  const updateTask = async (id) => {
+    await axios.patch(`/api/tasks/${id}`, { title });
+    setEditTask(null);
     fetchTasks();
   };
 
@@ -228,7 +184,9 @@ export default function Home() {
       <ul>
         {tasks.map((task) => (
           <li key={task._id}>
-            {task.title}{" "}
+            {task.title}
+            <button onClick={() => setEditTask(task._id)}>Edit</button>
+            <button onClick={() => updateTask(task._id)}>Save</button>
             <button onClick={() => deleteTask(task._id)}>Delete</button>
           </li>
         ))}
@@ -240,24 +198,17 @@ export default function Home() {
 
 ---
 
-## 🚀 **Running the Application**
-```bash
-npm run dev
-```
-Go to: **[http://localhost:3000](http://localhost:3000)**
-
----
-
-## 📌 **Project Structure**
+## 📂 **Project Structure**
 ```
 nextjs-crud-app/
 │── models/
-│   └── Task.js
+│   ├── Task.js
 │── pages/
 │   ├── api/
 │   │   ├── tasks/
 │   │   │   ├── index.js
 │   │   │   ├── [id].js
+│   ├── index.js
 │── utils/
 │   ├── db.js
 │── .env.local
@@ -267,16 +218,5 @@ nextjs-crud-app/
 
 ---
 
-## 📢 **Conclusion**
-🎉 You have successfully built a full-stack **Next.js CRUD** app with **MongoDB**! 🚀  
-Feel free to enhance it by adding:
-- ✅ Authentication (JWT or Firebase)
-- ✅ Edit task functionality
-- ✅ UI improvements with Tailwind CSS
+ **Author:** *Abdur Rashid Sawom* 
 
----
-
-  
-📧 **Author:** *Abdur Rashid Sawom*  
-
-Happy Coding! 🚀
